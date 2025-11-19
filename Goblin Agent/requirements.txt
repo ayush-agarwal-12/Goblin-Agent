@@ -1,0 +1,10 @@
+langchain
+langgraph
+langgraph-cli
+langchain-groq
+pandas
+ta
+yfinance
+finnhub-python
+dotenv
+typing

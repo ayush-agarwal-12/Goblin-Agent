@@ -1,247 +1,224 @@
-Goblin Agent – Stock Analysis & Trading Signal Agent
+# GoblinAgent: Multi-Agent Financial Analysis System
+## Overview
 
-Goblin Agent is an LLM-powered financial analysis workflow that takes a stock symbol (e.g. AAPL) and returns a structured, human-readable report including:
+GoblinAgent is a multi-agent, LLM-powered stock analysis system built using LangGraph, FastAPI, and multiple data providers.
 
-Market data
+The agent orchestrates four specialized financial intelligence modules to produce:
 
-Fundamental ratios
+Market & price analysis
+
+Fundamental valuation metrics
 
 Technical indicators
 
-News & sentiment analysis
+News sentiment intelligence
 
-A final trading conclusion (signal, confidence, position size)
+Final trading signal (Buy / Sell / Hold)
 
-It is wired into a FastAPI backend with a simple chat-style UI, so you can type a symbol and get a full analysis in one place.
+Confidence score
 
-1. How Goblin Agent Works
+Recommended position size
 
-The core entrypoint of the workflow is:
+GoblinAgent blends AI reasoning, quantitative indicators, and NLP sentiment extraction to deliver a unified investment-grade analysis in seconds.
 
-from src.workflows.workflow import run_analysis
+# Core Architecture
+## Multi-Agent Sequential Pipeline (LangGraph)
 
+GoblinAgent uses a sequential workflow, where each specialized agent receives the current state, processes new information, and passes forward enhanced state data.
 
-When you pass a stock symbol to run_analysis(symbol, analysis_date, session_id), the agent executes several stages:
+## Pipeline Structure
 
 Data Collection Agent
 
-Fetches market data (current price, previous close, price change, price change %).
-
-Fetches company info (name, sector, industry, market cap, country, exchange, description).
-
-Fetches basic financials / metrics for fundamentals and ratios.
-
 Technical Analysis Agent
-
-Computes indicators like SMA, EMA, RSI, MACD, Bollinger Bands, ADX, CCI from historical price data.
 
 News Intelligence Agent
 
-Downloads recent news for the ticker.
+Portfolio Manager Agent (Final Decision Maker)
 
-Extracts headline, source, key points, sentiment, impact, category per article.
+Each step adds unique insights, resulting in a rich, multi-dimensional stock evaluation.
 
-Builds higher-level NLP features that summarize overall sentiment.
+# Agent Breakdown
+## 1. Data Collection Agent
 
-Portfolio Manager Agent (Final Conclusion)
+Aggregates raw market and company data:
 
-Looks at:
+Market Data
+
+Current price
+
+Previous closing price
+
+Price change (absolute)
+
+Price change (%)
+
+Company Information
+
+Company name
+
+Sector & industry
+
+Market capitalization
+
+Country
+
+Exchange
+
+Business description
+
+Fundamental Metrics
+
+(From basic financials → metrics)
+
+Valuation
+
+P/E Ratio
+
+P/B Ratio
+
+Dividend Yield
+
+Profitability
+
+ROE
+
+ROA
+
+Net Profit Margin
+
+EPS
+
+Liquidity & Leverage
+
+Current Ratio
+
+Debt-to-Equity
+
+Growth
+
+Revenue Growth
+
+This agent creates the full fundamental profile used downstream.
+
+## 2. Technical Analysis Agent
+
+Computes indicators using pricing history:
+
+Trend Indicators
+
+SMA (20-day)
+
+EMA (20-day)
+
+Momentum Indicators
+
+RSI (14-period)
+
+CCI (20-period)
+
+Volatility Indicators
+
+Bollinger Bands (Upper / Middle / Lower)
+
+MACD Components
+
+MACD line
+
+Signal line
+
+Histogram
+
+Trend Strength
+
+ADX
+
+The agent interprets whether the stock is trending, consolidating, overbought, oversold, or volatile.
+
+## 3. News Intelligence Agent
+
+Extracts natural-language insights from real-time news feeds:
+
+Per Article:
+
+Headline
+
+Source
+
+Published date
+
+Key bullet-point summaries
+
+Sentiment (positive / negative / neutral)
+
+Impact (low / medium / high)
+
+Category (earnings, analyst rating, sector news, etc.)
+
+Output:
+
+Number of articles analyzed
+
+Condensed news sentiment overview
+
+Key insights influencing market behavior
+
+This agent reveals psychological & macro-driven movement risks that fundamentals cannot capture.
+
+## 4. Portfolio Manager Agent
+
+This is the final decision-making module.
+
+Inputs:
 
 Market data
 
-Fundamental ratios
+Fundamentals
 
 Technical indicators
 
 News sentiment
 
-Produces a final decision:
+Outputs:
 
-trading_signal – e.g. BUY, SELL, or HOLD
+Trading Signal
 
-confidence_level – value between 0 and 1
+BUY
 
-position_size – recommended allocation in %
+SELL
 
-The FastAPI endpoint calls run_analysis(...), then formats all of this into a single multi-section text summary for the UI.
+HOLD
 
-2. What the Report Includes
-2.1 Market Data
+Confidence Level
 
-Keys (from market_data and price_data):
+Value from 0 → 1
 
-current_price
+Also represented as a percentage
 
-previous_close
+Position Size
 
-price_change
+Recommended allocation (%) for the symbol
 
-price_change_pct
+Adjusted for confidence and risk level
 
-The report shows, for example:
+This produces the final investment-ready conclusion.
 
-Current Price – latest trading price
+# How GoblinAgent Reaches Its Conclusion
 
-Previous Close – last close price
+GoblinAgent combines:
 
-Price Change – absolute change
+ Data Collection → Fair Value & Business Quality
+ Technical Indicators → Momentum & Trend Direction
+ News Sentiment → Short-Term Market Psychology
+ Decision Agent → Risk-Adjusted Signal
 
-Price Change % – percentage move since previous close
+Decision Logic (simplified):
 
-2.2 Company Information
+Strong fundamentals + positive trend + positive news → BUY
 
-Keys (from company_info):
+Weak fundamentals + negative trend + negative news → SELL
 
-name
+Mixed or uncertain indicators → HOLD
 
-sector
-
-industry
-
-market_cap
-
-country
-
-exchange
-
-description
-
-This describes what the company does, in which sector/industry it operates, where it is listed, and its approximate size (market cap).
-
-2.3 Fundamental Metrics (Financial Ratios)
-
-Keys (from metrics inside basic_financials):
-
-Valuation
-
-peBasicExclExtraTTM – P/E ratio (price vs earnings)
-
-pbAnnual – P/B ratio (price vs book value)
-
-dividendYieldIndicatedAnnual – dividend yield
-
-Profitability
-
-roeRfy – Return on Equity
-
-roaRfy – Return on Assets
-
-netProfitMarginTTM – net profit margin
-
-epsBasicExclExtraItemsTTM – earnings per share
-
-Liquidity & Leverage
-
-currentRatioAnnual – current ratio (short-term liquidity)
-
-totalDebt/totalEquityAnnual – debt-to-equity ratio
-
-Growth
-
-revenueGrowthTTM – revenue growth over trailing twelve months
-
-These ratios explain how expensive the stock is, how profitable it is, how leveraged it is, and whether it is growing.
-
-2.4 Technical Indicators
-
-Keys (from technical_indicators / tech_data):
-
-SMA – Simple Moving Average (trend)
-
-EMA – Exponential Moving Average (trend, recent prices weighted more)
-
-RSI – Relative Strength Index (overbought/oversold momentum)
-
-MACD – Moving Average Convergence Divergence (trend & momentum)
-
-macd
-
-signal
-
-histogram
-
-BBANDS – Bollinger Bands (volatility)
-
-upper
-
-middle
-
-lower
-
-ADX – Average Directional Index (trend strength)
-
-CCI – Commodity Channel Index (momentum / deviation from typical price)
-
-These help determine whether the stock is trending, range-bound, or overbought/oversold.
-
-2.5 News & Sentiment Analysis
-
-From news_intelligence_results → nlp_features → news_features:
-
-Per article:
-
-headline
-
-published_date
-
-source
-
-key_points (bullet-style summary)
-
-sentiment (e.g. positive / negative / neutral)
-
-impact (e.g. low / medium / high)
-
-category (e.g. earnings, analyst rating, etc.)
-
-The report:
-
-Counts total articles analyzed.
-
-Shows a few top articles (headline + key points).
-
-Uses sentiment to understand whether news is supportive, negative, or mixed for the stock.
-
-2.6 Final Conclusion
-
-From portfolio_manager_results (often under portfolio_result[symbol]):
-
-trading_signal – final decision:
-
-BUY – expected upside / favorable conditions
-
-SELL – downside risk / overvaluation / negative setup
-
-HOLD – uncertain or fairly valued
-
-confidence_level:
-
-Float between 0 and 1
-
-Also expressed as a percentage in the text summary
-
-position_size:
-
-Recommended allocation in % of your portfolio (e.g. 20%, 60%, etc.)
-
-How it gets to the conclusion (logic):
-
-High level, the portfolio manager agent:
-
-Reads:
-
-Trend & momentum from technical indicators
-
-Valuation & profitability from fundamentals
-
-Overall bias from news sentiment
-
-Weighs the evidence:
-
-Strong fundamentals + positive trend + positive news → more likely BUY with higher confidence & larger position size.
-
-Weak fundamentals + negative trend + bad news → more likely SELL.
-
-Mixed / conflicting signals → HOLD or small position.
-
-Converts this reasoning into the final trading_signal, confidence_level, and position_size.
+The confidence score reflects alignment between these factors.
+The position size scales with confidence.

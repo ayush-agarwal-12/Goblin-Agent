@@ -9,15 +9,16 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Project Setup
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
-
 load_dotenv()
 
 os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Goblin Agent"
+
+# Project Setup
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
 
 from src.workflows.workflow import run_analysis
 
